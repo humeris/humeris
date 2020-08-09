@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./packages/boule"
+    },
+    {
+      "path": "./packages/espresso-shot"
+    }
+  ]
+}

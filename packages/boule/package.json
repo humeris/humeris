@@ -1,0 +1,38 @@
+{
+  "name": "@humeris/boule",
+  "version": "1.0.0",
+  "publisher": "humeris",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/humeris/humeris.git",
+    "directory": "packages/boule"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "npm run build:types && npm run build:js",
+    "build:types": "tsc -p tsconfig.build.json",
+    "build:js": "rollup -c",
+    "prepublishOnly": "npm run build",
+    "test": "npm run ts",
+    "ts": "tsc",
+    "format": "prettier --write src"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.5",
+    "@babel/core": "^7.11.1",
+    "@babel/plugin-syntax-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "@rollup/plugin-babel": "^5.1.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
+    "@types/node": "^14.0.27",
+    "prettier": "^2.0.5",
+    "rollup": "^2.23.1",
+    "typescript": "^4.0.1-rc"
+  }
+}

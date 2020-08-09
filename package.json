@@ -1,0 +1,25 @@
+{
+  "name": "humeris",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/humeris/humeris.git"
+  },
+  "bugs": {
+    "url": "https://github.com/humeris/humeris/issues"
+  },
+  "scripts": {
+    "test": "jest",
+    "ts": "tsc --build",
+    "format": "prettier --write packages/*/src"
+  },
+  "devDependencies": {
+    "@babel/plugin-syntax-class-properties": "^7.10.4",
+    "@babel/preset-env": "^7.11.0",
+    "@babel/preset-typescript": "^7.10.4",
+    "@types/jest": "^26.0.9",
+    "jest": "^26.2.2",
+    "prettier": "^2.0.5",
+    "typescript": "^4.0.1-rc"
+  }
+}
