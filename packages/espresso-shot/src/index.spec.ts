@@ -163,6 +163,14 @@ describe("packages/espresso-shot", () => {
     ]);
   });
 
+  typecheck("Common types that reference themselves", () => [
+    expectTypeOf<RegExp>().toBe<RegExp>(),
+    expectTypeOf<Promise<number>>().toBe<Promise<number>>(),
+    expectTypeOf<PromiseLike<number>>().toBe<PromiseLike<number>>(),
+    expectTypeOf<PromiseConstructor>().toBe<PromiseConstructor>(),
+    expectTypeOf<typeof fetch>().toBe<typeof fetch>(),
+  ]);
+
   typecheck("supports extension (see `toHaveProperty` declaration below)", () => [
     expectTypeOf(42).toHaveProperty("toString"),
     // @ts-expect-error

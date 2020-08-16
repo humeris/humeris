@@ -1,6 +1,6 @@
 {
   "name": "@humeris/espresso-shot",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "humeris",
   "license": "MIT",
   "repository": {
@@ -18,12 +18,12 @@
     "build:types": "tsc -p tsconfig.build.json",
     "build:js": "rollup -c",
     "prepublishOnly": "npm run build",
-    "test": "jest",
+    "test": "node --unhandled-rejections=strict ./node_modules/jest/bin/jest.js",
     "ts": "tsc",
     "format": "prettier --write src"
   },
   "dependencies": {
-    "@humeris/boule": "^1.0.0"
+    "@humeris/boule": "^1.0.1"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",

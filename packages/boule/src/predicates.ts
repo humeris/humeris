@@ -20,8 +20,22 @@ type StructurallyEqual<T, U> = IsSubtype<
   { [K in keyof T]: true }
 >;
 
-type DeconstructFunction<T> = T extends (...args: infer U) => infer V ? [U, V] : never;
-type CallablyEqual<T, U> = StructurallyEqual<DeconstructFunction<T>, DeconstructFunction<U>>;
+type AnyFunction = (...args: Array<any>) => any;
+
+type DeltaStructurallyEqual<T, U> = StructurallyEqual<Exclude<T, U>, Exclude<U, T>>;
+
+// Weaken method equality slightly since methods
+// are likely to circularly reference their types
+
+type ParametersEqual<T, U> = DeltaStructurallyEqual<
+  Parameters<T extends AnyFunction ? T : never>,
+  Parameters<U extends AnyFunction ? U : never>
+>;
+
+type ReturnTypesEqual<T, U> = DeltaStructurallyEqual<
+  ReturnType<T extends AnyFunction ? T : never>,
+  ReturnType<U extends AnyFunction ? U : never>
+>;
 
 export declare type Is<T, U> = AnyTrue<
   [
@@ -36,7 +50,8 @@ export declare type Is<T, U> = AnyTrue<
         IsSubtype<U, T>,
         IsEqual<keyof Exclude<T, null | undefined>, keyof Exclude<U, null | undefined>>,
         StructurallyEqual<T, U>,
-        CallablyEqual<T, U>,
+        ParametersEqual<T, U>,
+        ReturnTypesEqual<T, U>,
       ]
     >,
   ]

@@ -9,7 +9,7 @@
     "url": "https://github.com/humeris/humeris/issues"
   },
   "scripts": {
-    "test": "jest",
+    "test": "node --unhandled-rejections=strict ./node_modules/jest/bin/jest.js",
     "ts": "tsc --build",
     "format": "prettier --write packages/*/src"
   },
