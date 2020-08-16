@@ -1,11 +1,5 @@
 import { If, Is, IsEqual, IsSubtype } from "@humeris/boule";
 
-type ExpandObject<T> = keyof T extends never ? T : { [K in keyof T]: Expand<T[K]> };
-type ExpandFunction<T> = T extends (...args: infer U) => infer V
-  ? (...args: Expand<U>) => Expand<V>
-  : unknown;
-type Expand<T> = T extends {} ? ExpandObject<T> & ExpandFunction<T> : T;
-
 const matcherRegistry: Record<string, () => {}> = {};
 
 let _warnOnUnnecessaryExplicitRegistration = false;
@@ -122,28 +116,26 @@ type TypeMatcherConfig = {
 declare const error: unique symbol;
 
 type BuildResult<TConfig extends TypeMatcherConfig> = {
-  [error]: If<TConfig["condition"], never, Expand<TConfig["error"]>>;
+  [error]: If<TConfig["condition"], never, TConfig["error"]>;
 };
 
 type BuildNegatedResult<TConfig extends TypeMatcherConfig> = {
-  [error]: If<TConfig["condition"], Expand<TConfig["not"]["error"]>, never>;
+  [error]: If<TConfig["condition"], TConfig["not"]["error"], never>;
 };
 
 type ExpectTypeOf<Source> = {
   [K in Exclude<keyof EspressoShotConfig<Source, never>, "not">]: <Target>(
     ...args: [] | [Target]
-  ) => K extends string ? Expand<BuildResult<EspressoShotConfig<Source, Target>[K]>> : never;
+  ) => K extends string ? BuildResult<EspressoShotConfig<Source, Target>[K]> : never;
 } & {
   not: {
     [K in Exclude<keyof EspressoShotConfig<Source, never>, "not">]: <Target>(
       ...args: [] | [Target]
-    ) => K extends string
-      ? Expand<BuildNegatedResult<EspressoShotConfig<Source, Target>[K]>>
-      : never;
+    ) => K extends string ? BuildNegatedResult<EspressoShotConfig<Source, Target>[K]> : never;
   };
 };
 
-type Expectation = Expand<{ [error]: never }>;
+type Expectation = { [error]: never };
 type CheckFunction = (
   check: (_: Expectation | Array<Expectation>) => void,
 ) => void | Expectation | Array<Expectation>;
@@ -159,6 +151,24 @@ function isPromiseLike<T>(obj: T | PromiseLike<T>): obj is PromiseLike<T> {
   );
 }
 
+interface Thenable<T> {
+  then<TResult = T extends PromiseLike<infer U> ? U : T>(
+    onfulfilled?: ((value: T extends PromiseLike<infer U> ? U : T) => TResult) | undefined | null,
+  ): T extends PromiseLike<any> ? PromiseLike<TResult> : TResult;
+}
+
+function thenable<T>(value: T | PromiseLike<T>): Thenable<T> {
+  if (isPromiseLike(value)) {
+    return value as Thenable<T>;
+  } else {
+    return {
+      then<U>(callback: (value: T) => U) {
+        return callback(value);
+      },
+    } as Thenable<T>;
+  }
+}
+
 function typecheckImpl(callback: CheckFunction | AsyncCheckFunction) {
   if (typeof callback !== "function") {
     throw Error("Last argument to `typecheck` must be a callback function.");
@@ -172,24 +182,20 @@ function typecheckImpl(callback: CheckFunction | AsyncCheckFunction) {
     );
   };
 
-  function handleResult(expectationOrExpectations: Expectation | Array<Expectation> | void): void {
-    if (Array.isArray(expectationOrExpectations)) {
-      removeCheckedExpectations(expectationOrExpectations);
-    } else if (expectationOrExpectations) {
-      removeCheckedExpectations([expectationOrExpectations]);
-    }
+  return thenable(callback(checkFunction)).then(
+    (expectationOrExpectations: Expectation | Array<Expectation> | void): void => {
+      if (Array.isArray(expectationOrExpectations)) {
+        removeCheckedExpectations(expectationOrExpectations);
+      } else if (expectationOrExpectations) {
+        removeCheckedExpectations([expectationOrExpectations]);
+      }
 
-    if (uncheckedExpectations.length > 0) {
-      throw Object.getOwnPropertyDescriptor(uncheckedExpectations.splice(0)[0], "__error__")!.value;
-    }
-  }
-
-  const expectationOrExpectations = callback(checkFunction);
-  if (isPromiseLike(expectationOrExpectations)) {
-    return expectationOrExpectations.then(handleResult);
-  } else {
-    return handleResult(expectationOrExpectations);
-  }
+      if (uncheckedExpectations.length > 0) {
+        throw Object.getOwnPropertyDescriptor(uncheckedExpectations.splice(0)[0], "__error__")!
+          .value;
+      }
+    },
+  );
 }
 
 function isRunningCompatibleTest(): boolean {
