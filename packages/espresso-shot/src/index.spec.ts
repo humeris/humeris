@@ -65,7 +65,7 @@ describe("packages/espresso-shot", () => {
     const y: { [x: string]: 0 | undefined; a?: 0 } = {};
 
     return check([
-      expectTypeOf(x).toEqual(y),
+      expectTypeOf(x).toBe(y),
 
       expectTypeOf<Required<typeof y>>().toExtend<Required<typeof x>>(),
       // @ts-expect-error
@@ -77,7 +77,7 @@ describe("packages/espresso-shot", () => {
   });
 
   typecheck("supports testing if types are the same", check => {
-    // `toEqual` checks that two types are mutually assignable, but
+    // `toBe` checks that two types are mutually assignable, but
     // assignability is not transitive.
     // `toBe` checks that two types are "the same", which means that
     // both types are assignable to all the same types and both types
@@ -99,9 +99,6 @@ describe("packages/espresso-shot", () => {
     };
 
     return check([
-      // `toEqual` checks mutual assignability
-      expectTypeOf<typeof pair["x"]>().toEqual<typeof pair["y"]>(),
-      // but `toBe` checks that they are "the same" type
       expectTypeOf<typeof pair["x"]>().not.toBe<typeof pair["y"]>(),
 
       // Sanity check that a type is the same as itself
@@ -126,9 +123,6 @@ describe("packages/espresso-shot", () => {
     };
 
     return check([
-      // `toEqual` checks mutual assignability
-      expectTypeOf<typeof pair["x"]>().toEqual<typeof pair["y"]>(),
-      // but `toBe` checks that they are "the same" type
       expectTypeOf<typeof pair["x"]>().not.toBe<typeof pair["y"]>(),
 
       // Sanity check that a type is the same as itself
@@ -153,9 +147,6 @@ describe("packages/espresso-shot", () => {
     };
 
     return check([
-      // `toEqual` checks mutual assignability
-      expectTypeOf<typeof pair["x"]>().toEqual<typeof pair["y"]>(),
-      // but `toBe` checks that they are "the same" type
       expectTypeOf<typeof pair["x"]>().not.toBe<typeof pair["y"]>(),
 
       // Sanity check that a type is the same as itself

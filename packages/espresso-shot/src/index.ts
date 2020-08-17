@@ -239,17 +239,6 @@ export declare interface EspressoShotConfig<Source, Target> {
   not: { [error]: "Cannot register reserved name `not`" };
 }
 
-registerTypeMatcher("toEqual");
-export declare interface EspressoShotConfig<Source, Target> {
-  toEqual: {
-    condition: IsEqual<Source, Target>;
-    error: { expected: Source; to_equal: Target };
-    not: {
-      error: { received_unexpected: Source };
-    };
-  };
-}
-
 registerTypeMatcher("toBe");
 export declare interface EspressoShotConfig<Source, Target> {
   toBe: {
