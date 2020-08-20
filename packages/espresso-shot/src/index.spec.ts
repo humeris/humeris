@@ -154,13 +154,95 @@ describe("packages/espresso-shot", () => {
     ]);
   });
 
-  typecheck("Common types that reference themselves", () => [
+  typecheck("example demonstrating object depth limits", check => {
+    type Okay = {
+      a: {
+        a: {
+          a: {
+            a: {
+              a: {
+                a: {
+                  a: {
+                    a: {
+                      a: {
+                        a: {
+                          a: {
+                            a: {
+                              a: {
+                                a: {
+                                  a: {
+                                    a: {
+                                      a: {
+                                        a: {
+                                          a: {
+                                            a: {
+                                              a: number;
+                                            };
+                                          };
+                                        };
+                                      };
+                                    };
+                                  };
+                                };
+                              };
+                            };
+                          };
+                        };
+                      };
+                    };
+                  };
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+
+    check(expectTypeOf<Okay>().toBe<Okay>());
+
+    type NotOkay = {
+      a: Okay;
+    };
+
+    // @ts-expect-error
+    check(expectTypeOf<NotOkay>().toBe<NotOkay>());
+  });
+
+  typecheck("example demonstrating function return depth limits", check => {
+    type Okay = () => void;
+
+    check(expectTypeOf<Okay>().toBe<Okay>());
+
+    type NotOkay = () => Okay;
+
+    // @ts-expect-error
+    check(expectTypeOf<NotOkay>().toBe<NotOkay>());
+  });
+
+  typecheck("example demonstrating function param depth limits (are infinite?)", check => {
+    type Okay = (a: Okay) => void;
+
+    check(expectTypeOf<Okay>().toBe<Okay>());
+  });
+
+  typecheck("common types that reference themselves", () => [
     expectTypeOf<RegExp>().toBe<RegExp>(),
     expectTypeOf<Promise<number>>().toBe<Promise<number>>(),
     expectTypeOf<PromiseLike<number>>().toBe<PromiseLike<number>>(),
-    expectTypeOf<PromiseConstructor>().toBe<PromiseConstructor>(),
     expectTypeOf<typeof fetch>().toBe<typeof fetch>(),
   ]);
+
+  typecheck("constructor types have depth problems due to method type signatures", check => {
+    // @ts-expect-error
+    check(expectTypeOf<PromiseConstructor>().toBe<PromiseConstructor>());
+    // @ts-expect-error
+    check(expectTypeOf<ArrayBufferConstructor>().toBe<ArrayBufferConstructor>());
+    // @ts-expect-error
+    check(expectTypeOf<FunctionConstructor>().toBe<FunctionConstructor>());
+    // @ts-expect-error
+    check(expectTypeOf<MapConstructor>().toBe<MapConstructor>());
+  });
 
   typecheck("supports extension (see `toHaveProperty` declaration below)", () => [
     expectTypeOf(42).toHaveProperty("toString"),

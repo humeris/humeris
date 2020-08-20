@@ -1,4 +1,4 @@
-import { If, Is, IsEqual, IsSubtype } from "@humeris/boule";
+import { If, Is, IsSubtype } from "@humeris/boule";
 
 const matcherRegistry: Record<string, () => {}> = {};
 
