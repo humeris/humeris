@@ -58,6 +58,15 @@ describe("packages/espresso-shot", () => {
     expectTypeOf(42).not.toBe<any>(),
   ]);
 
+  typecheck("various regressions", check => {
+    check(expectTypeOf<{ a: () => void }>().not.toBe<{ a: (a?: number) => void }>());
+    check(expectTypeOf<() => void>().not.toBe<(a?: number) => void>());
+
+    check(expectTypeOf<Promise<number>>().not.toBe<Promise<string>>());
+    check(expectTypeOf<[any] | undefined>().not.toBe<[42] | undefined>());
+    check(expectTypeOf<() => [any]>().not.toBe<() => [42]>());
+  });
+
   typecheck("very subtle case", check => {
     // These types describe the same set of runtime values and
     // differ only in how type transformations may apply to them.
@@ -154,70 +163,43 @@ describe("packages/espresso-shot", () => {
     ]);
   });
 
-  typecheck("example demonstrating object depth limits", check => {
-    type Okay = {
-      a: {
-        a: {
-          a: {
-            a: {
-              a: {
-                a: {
-                  a: {
-                    a: {
-                      a: {
-                        a: {
-                          a: {
-                            a: {
-                              a: {
-                                a: {
-                                  a: {
-                                    a: {
-                                      a: {
-                                        a: {
-                                          a: {
-                                            a: {
-                                              a: number;
-                                            };
-                                          };
-                                        };
-                                      };
-                                    };
-                                  };
-                                };
-                              };
-                            };
-                          };
-                        };
-                      };
-                    };
-                  };
-                };
-              };
-            };
-          };
-        };
-      };
-    };
+  typecheck("supports specifying max depth", check => {
+    type X1 = (a?: number) => void;
+    type Y1 = () => void;
 
-    check(expectTypeOf<Okay>().toBe<Okay>());
+    type X2 = { a: X1 };
+    type Y2 = { a: Y1 };
 
-    type NotOkay = {
-      a: Okay;
-    };
+    type X3 = { a: X2 };
+    type Y3 = { a: Y2 };
 
-    // @ts-expect-error
-    check(expectTypeOf<NotOkay>().toBe<NotOkay>());
+    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 4 }>());
+    check(expectTypeOf<X2>().not.toBe<Y2, { max_depth: 4 }>());
+    check(expectTypeOf<X3>().not.toBe<Y3, { max_depth: 4 }>());
+
+    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 3 }>());
+    check(expectTypeOf<X2>().not.toBe<Y2, { max_depth: 3 }>());
+    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 3 }>());
+
+    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 2 }>());
+    check(expectTypeOf<X2>().toBe<Y2, { max_depth: 2 }>());
+    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 2 }>());
+
+    check(expectTypeOf<X1>().toBe<Y1, { max_depth: 1 }>());
+    check(expectTypeOf<X2>().toBe<Y2, { max_depth: 1 }>());
+    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 1 }>());
   });
 
-  typecheck("example demonstrating function return depth limits", check => {
-    type Okay = () => void;
+  typecheck("example demonstrating object depth limits (are infinite?)", check => {
+    type Okay = { a: Okay };
 
     check(expectTypeOf<Okay>().toBe<Okay>());
+  });
 
-    type NotOkay = () => Okay;
+  typecheck("example demonstrating function return depth limits (are infinite?)", check => {
+    type Okay = () => Okay;
 
-    // @ts-expect-error
-    check(expectTypeOf<NotOkay>().toBe<NotOkay>());
+    check(expectTypeOf<Okay>().toBe<Okay>());
   });
 
   typecheck("example demonstrating function param depth limits (are infinite?)", check => {
@@ -233,14 +215,10 @@ describe("packages/espresso-shot", () => {
     expectTypeOf<typeof fetch>().toBe<typeof fetch>(),
   ]);
 
-  typecheck("constructor types have depth problems due to method type signatures", check => {
-    // @ts-expect-error
+  typecheck("various constructor", check => {
     check(expectTypeOf<PromiseConstructor>().toBe<PromiseConstructor>());
-    // @ts-expect-error
     check(expectTypeOf<ArrayBufferConstructor>().toBe<ArrayBufferConstructor>());
-    // @ts-expect-error
     check(expectTypeOf<FunctionConstructor>().toBe<FunctionConstructor>());
-    // @ts-expect-error
     check(expectTypeOf<MapConstructor>().toBe<MapConstructor>());
   });
 

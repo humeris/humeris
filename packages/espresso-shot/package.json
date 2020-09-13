@@ -1,6 +1,6 @@
 {
   "name": "@humeris/espresso-shot",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "publisher": "humeris",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
     "format": "prettier --write src"
   },
   "dependencies": {
-    "@humeris/boule": "^2.0.1"
+    "@humeris/boule": "^3.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",

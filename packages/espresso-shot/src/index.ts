@@ -56,9 +56,9 @@ function removeCheckedExpectations(expectations: Array<Expectation>): void {
   }
 }
 
-export function registerTypeMatcher<TName extends keyof EspressoShotConfig<never, never>>(
-  name: TName extends "not" ? { ["error"]: "Cannot register reserved name `not`" } : TName,
-) {
+export function registerTypeMatcher<
+  TName extends Exclude<keyof EspressoShotConfig<never, never>, typeof options>
+>(name: TName extends "not" ? { ["error"]: "Cannot register reserved name `not`" } : TName) {
   if (typeof name !== "string") {
     throw Error("Type matcher names must be strings");
   }
@@ -123,15 +123,46 @@ type BuildNegatedResult<TConfig extends TypeMatcherConfig> = {
   [error]: If<TConfig["condition"], TConfig["not"]["error"], never>;
 };
 
+type GetProperty<T, K> = K extends keyof T ? T[K] : never;
+type SetProperty<T, K extends PropertyKey, V> = { [Key in keyof T]: Key extends K ? V : T[Key] };
+
 type ExpectTypeOf<Source> = {
-  [K in Exclude<keyof EspressoShotConfig<Source, never>, "not">]: <Target>(
+  [K in Exclude<keyof EspressoShotConfig<Source, never>, "not" | typeof options>]: <
+    Target,
+    Options extends GetProperty<EspressoShotConfig<Source, never>[typeof options], K> = GetProperty<
+      EspressoShotConfig<Source, never>[typeof options],
+      K
+    >
+  >(
     ...args: [] | [Target]
-  ) => K extends string ? BuildResult<EspressoShotConfig<Source, Target>[K]> : never;
+  ) => K extends string
+    ? BuildResult<
+        EspressoShotConfig<
+          Source,
+          Target,
+          SetProperty<EspressoShotConfig<Source, never>[typeof options], K, Options>
+        >[K]
+      >
+    : never;
 } & {
   not: {
-    [K in Exclude<keyof EspressoShotConfig<Source, never>, "not">]: <Target>(
+    [K in Exclude<keyof EspressoShotConfig<Source, never>, "not" | typeof options>]: <
+      Target,
+      Options extends GetProperty<
+        EspressoShotConfig<Source, never>[typeof options],
+        K
+      > = GetProperty<EspressoShotConfig<Source, never>[typeof options], K>
+    >(
       ...args: [] | [Target]
-    ) => K extends string ? BuildNegatedResult<EspressoShotConfig<Source, Target>[K]> : never;
+    ) => K extends string
+      ? BuildNegatedResult<
+          EspressoShotConfig<
+            Source,
+            Target,
+            SetProperty<EspressoShotConfig<Source, never>[typeof options], K, Options>
+          >[K]
+        >
+      : never;
   };
 };
 
@@ -235,14 +266,27 @@ export function typecheck<TCheckFunction extends CheckFunction | AsyncCheckFunct
   return typecheckImpl(callback);
 }
 
+declare const options: unique symbol;
+export declare interface EspressoShotConfig<Source, Target, Options> {
+  [options]: Options;
+}
+
 export declare interface EspressoShotConfig<Source, Target> {
   not: { [error]: "Cannot register reserved name `not`" };
 }
 
 registerTypeMatcher("toBe");
-export declare interface EspressoShotConfig<Source, Target> {
+export declare interface EspressoShotConfig<
+  Source,
+  Target,
+  Options extends { toBe: { max_depth: number } } = { toBe: { max_depth: number } }
+> {
   toBe: {
-    condition: Is<Source, Target>;
+    condition: Is<
+      Source,
+      Target,
+      number extends Options["toBe"]["max_depth"] ? 5 : Options["toBe"]["max_depth"]
+    >;
     error: { expected: Source; to_be: Target };
     not: {
       error: { received_unexpected: Source };
