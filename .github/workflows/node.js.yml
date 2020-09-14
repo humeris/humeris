@@ -20,7 +20,8 @@ jobs:
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       run: echo "::set-output name=dir::$(yarn cache dir)"
-    - uses: actions/cache@v2
+    - name: Attempt to restore yarn cache
+      uses: actions/cache@v2
       id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
       with:
         path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
@@ -29,13 +30,30 @@ jobs:
           ${{ runner.os }}-yarn-
     - run: yarn install --frozen-lockfile
 
-    - uses: actions/cache@v2
+    - name: Get TypeScript version
+      id: typescript-version
+      run: echo "::set-output name=version::$(tsc --version)"
+
+    - name: Get TypeScript cache keys
+      id: typescript-cache-keys
+      env:
+        TYPESCRIPT_CONFIGS_KEY: ${{ runner.os }}-typescript-${{ steps.typescript-version.outputs.version }}-${{ hashFiles('**/*tsconfig.json') }}
+        TYPESCRIPT_SOURCES_KEY: ${{ hashFiles('**/*.ts', '!**/dist', '!**/node_modules') }}
+      run: |
+        echo "::set-output name=configs::$TYPESCRIPT_CONFIGS_KEY"
+        echo "::set-output name=sources::$TYPESCRIPT_SOURCES_KEY"
+
+    - name: Attempt to restore TypeScript cache
+      uses: actions/cache@v2
       id: typescript-cache # use this to check for `cache-hit` (`steps.typescript-cache.outputs.cache-hit != 'true'`)
       with:
-        path: "**/*.tsbuildinfo"
-        key: ${{ runner.os }}-typescript-${{ hashFiles('**/*.tsbuildinfo') }}
+        path: |
+          **/*.tsbuildinfo 
+          **/dist/**/*.d.ts
+        key: ${{ steps.typescript-cache-keys.outputs.configs }}-${{ steps.typescript-cache-keys.outputs.sources }}
         restore-keys: |
-          ${{ runner.os }}-typescript-
+           ${{ steps.typescript-cache-keys.outputs.configs }}-
+      
     - run: yarn run ts
 
     - run: yarn test --verbose
