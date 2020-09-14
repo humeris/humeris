@@ -27,7 +27,15 @@ jobs:
         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
           ${{ runner.os }}-yarn-
-
     - run: yarn install --frozen-lockfile
+
+    - uses: actions/cache@v2
+      id: typescript-cache # use this to check for `cache-hit` (`steps.typescript-cache.outputs.cache-hit != 'true'`)
+      with:
+        path: "**/*.tsbuildinfo"
+        key: ${{ runner.os }}-typescript-${{ hashFiles('**/*.tsbuildinfo') }}
+        restore-keys: |
+          ${{ runner.os }}-typescript-
     - run: yarn run ts
+
     - run: yarn test --verbose
