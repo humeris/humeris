@@ -14,10 +14,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "npm run build:types && npm run build:js",
+    "build": "yarn run build:types && yarn run build:js",
     "build:types": "tsc -p tsconfig.build.json",
     "build:js": "rollup -c",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "yarn run build",
     "test": "node --unhandled-rejections=strict ./node_modules/jest/bin/jest.js",
     "ts": "tsc",
     "format": "prettier --write src"
