@@ -48,12 +48,12 @@ jobs:
       id: typescript-cache # use this to check for `cache-hit` (`steps.typescript-cache.outputs.cache-hit != 'true'`)
       with:
         path: |
-          **/*.tsbuildinfo 
+          **/*.tsbuildinfo
           **/dist/**/*.d.ts
         key: ${{ steps.typescript-cache-keys.outputs.configs }}-${{ steps.typescript-cache-keys.outputs.sources }}
         restore-keys: |
            ${{ steps.typescript-cache-keys.outputs.configs }}-
-      
+
     - run: yarn run ts
 
     - run: yarn test --verbose

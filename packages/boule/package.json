@@ -1,6 +1,6 @@
 {
   "name": "@humeris/boule",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "publisher": "humeris",
   "license": "MIT",
   "repository": {
@@ -23,16 +23,15 @@
     "format": "prettier --write src"
   },
   "devDependencies": {
-    "@babel/cli": "^7.10.5",
-    "@babel/core": "^7.11.1",
-    "@babel/plugin-syntax-class-properties": "^7.10.4",
-    "@babel/preset-env": "^7.11.0",
-    "@babel/preset-typescript": "^7.10.4",
-    "@rollup/plugin-babel": "^5.1.0",
-    "@rollup/plugin-node-resolve": "^9.0.0",
-    "@types/node": "^14.0.27",
-    "prettier": "^2.1.1",
-    "rollup": "^2.23.1",
-    "typescript": "^4.1.0-dev.20200817"
+    "@babel/cli": "^7.16.0",
+    "@babel/core": "^7.16.0",
+    "@babel/preset-env": "^7.16.0",
+    "@babel/preset-typescript": "^7.16.0",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-node-resolve": "^13.0.6",
+    "@types/node": "^16.11.6",
+    "prettier": "^2.4.1",
+    "rollup": "^2.58.3",
+    "typescript": "^4.4.4"
   }
 }

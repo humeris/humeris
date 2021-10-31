@@ -57,7 +57,7 @@ function removeCheckedExpectations(expectations: Array<Expectation>): void {
 }
 
 export function registerTypeMatcher<
-  TName extends Exclude<keyof EspressoShotConfig<never, never>, typeof options>
+  TName extends Exclude<keyof EspressoShotConfig<never, never>, typeof options>,
 >(name: TName extends "not" ? { ["error"]: "Cannot register reserved name `not`" } : TName) {
   if (typeof name !== "string") {
     throw Error("Type matcher names must be strings");
@@ -132,7 +132,7 @@ type ExpectTypeOf<Source> = {
     Options extends GetProperty<EspressoShotConfig<Source, never>[typeof options], K> = GetProperty<
       EspressoShotConfig<Source, never>[typeof options],
       K
-    >
+    >,
   >(
     ...args: [] | [Target]
   ) => K extends string
@@ -151,7 +151,7 @@ type ExpectTypeOf<Source> = {
       Options extends GetProperty<
         EspressoShotConfig<Source, never>[typeof options],
         K
-      > = GetProperty<EspressoShotConfig<Source, never>[typeof options], K>
+      > = GetProperty<EspressoShotConfig<Source, never>[typeof options], K>,
     >(
       ...args: [] | [Target]
     ) => K extends string
@@ -279,14 +279,10 @@ registerTypeMatcher("toBe");
 export declare interface EspressoShotConfig<
   Source,
   Target,
-  Options extends { toBe: { max_depth: number } } = { toBe: { max_depth: number } }
+  Options extends { toBe: { max_depth: number } } = { toBe: { max_depth: number } },
 > {
   toBe: {
-    condition: Is<
-      Source,
-      Target,
-      number extends Options["toBe"]["max_depth"] ? 5 : Options["toBe"]["max_depth"]
-    >;
+    condition: Is<Source, Target>;
     error: { expected: Source; to_be: Target };
     not: {
       error: { received_unexpected: Source };

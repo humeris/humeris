@@ -40,22 +40,22 @@ describe("packages/espresso-shot", () => {
 
   typecheck("supports testing subtypes", () => [
     // @ts-expect-error
-    expectTypeOf(42).toBe<number>(),
-    expectTypeOf(42).toExtend<number>(),
+    expectTypeOf(42 as const).toBe<number>(),
+    expectTypeOf(42 as const).toExtend<number>(),
   ]);
 
   typecheck("supports testing inequality", () => [
     // @ts-expect-error
-    expectTypeOf(42).toBe<never>(),
-    expectTypeOf(42).not.toBe<never>(),
+    expectTypeOf(42 as const).toBe<never>(),
+    expectTypeOf(42 as const).not.toBe<never>(),
 
     // @ts-expect-error
-    expectTypeOf(42).toBe<unknown>(),
-    expectTypeOf(42).not.toBe<unknown>(),
+    expectTypeOf(42 as const).toBe<unknown>(),
+    expectTypeOf(42 as const).not.toBe<unknown>(),
 
     // @ts-expect-error
-    expectTypeOf(42).toBe<any>(),
-    expectTypeOf(42).not.toBe<any>(),
+    expectTypeOf(42 as const).toBe<any>(),
+    expectTypeOf(42 as const).not.toBe<any>(),
   ]);
 
   typecheck("various regressions", check => {
@@ -67,27 +67,7 @@ describe("packages/espresso-shot", () => {
     check(expectTypeOf<() => [any]>().not.toBe<() => [42]>());
   });
 
-  typecheck("very subtle case", check => {
-    // These types describe the same set of runtime values and
-    // differ only in how type transformations may apply to them.
-    const x: { [x: string]: 0 | undefined } = {};
-    const y: { [x: string]: 0 | undefined; a?: 0 } = {};
-
-    return check([
-      expectTypeOf(x).toBe(y),
-
-      expectTypeOf<Required<typeof y>>().toExtend<Required<typeof x>>(),
-      // @ts-expect-error
-      expectTypeOf<Required<typeof x>>().toExtend<Required<typeof y>>(),
-
-      // Explicit design decision to treat these types as the same
-      expectTypeOf(x).toBe(y),
-    ]);
-  });
-
   typecheck("supports testing if types are the same", check => {
-    // `toBe` checks that two types are mutually assignable, but
-    // assignability is not transitive.
     // `toBe` checks that two types are "the same", which means that
     // both types are assignable to all the same types and both types
     // have all the same types assignable to them.
@@ -163,51 +143,6 @@ describe("packages/espresso-shot", () => {
     ]);
   });
 
-  typecheck("supports specifying max depth", check => {
-    type X1 = (a?: number) => void;
-    type Y1 = () => void;
-
-    type X2 = { a: X1 };
-    type Y2 = { a: Y1 };
-
-    type X3 = { a: X2 };
-    type Y3 = { a: Y2 };
-
-    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 4 }>());
-    check(expectTypeOf<X2>().not.toBe<Y2, { max_depth: 4 }>());
-    check(expectTypeOf<X3>().not.toBe<Y3, { max_depth: 4 }>());
-
-    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 3 }>());
-    check(expectTypeOf<X2>().not.toBe<Y2, { max_depth: 3 }>());
-    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 3 }>());
-
-    check(expectTypeOf<X1>().not.toBe<Y1, { max_depth: 2 }>());
-    check(expectTypeOf<X2>().toBe<Y2, { max_depth: 2 }>());
-    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 2 }>());
-
-    check(expectTypeOf<X1>().toBe<Y1, { max_depth: 1 }>());
-    check(expectTypeOf<X2>().toBe<Y2, { max_depth: 1 }>());
-    check(expectTypeOf<X3>().toBe<Y3, { max_depth: 1 }>());
-  });
-
-  typecheck("example demonstrating object depth limits (are infinite?)", check => {
-    type Okay = { a: Okay };
-
-    check(expectTypeOf<Okay>().toBe<Okay>());
-  });
-
-  typecheck("example demonstrating function return depth limits (are infinite?)", check => {
-    type Okay = () => Okay;
-
-    check(expectTypeOf<Okay>().toBe<Okay>());
-  });
-
-  typecheck("example demonstrating function param depth limits (are infinite?)", check => {
-    type Okay = (a: Okay) => void;
-
-    check(expectTypeOf<Okay>().toBe<Okay>());
-  });
-
   typecheck("common types that reference themselves", () => [
     expectTypeOf<RegExp>().toBe<RegExp>(),
     expectTypeOf<Promise<number>>().toBe<Promise<number>>(),
@@ -223,13 +158,13 @@ describe("packages/espresso-shot", () => {
   });
 
   typecheck("supports extension (see `toHaveProperty` declaration below)", () => [
-    expectTypeOf(42).toHaveProperty("toString"),
+    expectTypeOf(42).toHaveProperty("toString" as const),
     // @ts-expect-error
-    expectTypeOf(42).not.toHaveProperty("toString"),
+    expectTypeOf(42).not.toHaveProperty("toString" as const),
 
     // @ts-expect-error
-    expectTypeOf(42).toHaveProperty("substring"),
-    expectTypeOf(42).not.toHaveProperty("substring"),
+    expectTypeOf(42).toHaveProperty("substring" as const),
+    expectTypeOf(42).not.toHaveProperty("substring" as const),
   ]);
 
   test("Cannot register reserved name `not` (see attempted `not` declaration below)", () => {
